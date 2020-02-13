@@ -19,6 +19,8 @@
 		<!-- include d3.js v5 -->
 		<script src="https://d3js.org/d3.v5.min.js"></script>
 		<script src="https://d3js.org/d3-array.v2.min.js"></script>
+		<script src="https://d3js.org/d3-time.v1.min.js"></script>
+		<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
 
 		<!-- Custom JS and CSS-->
 		<script src="../js/viz1.js"></script>
@@ -137,8 +139,7 @@
 
 				<h2 id="visualizations">D3 Implementation</h2>
 
-				<svg></svg>
-				<textarea></textarea>
+				<svg id="viz"></svg>
 
 
 				<h2 id="about">About</h2>
@@ -199,8 +200,8 @@
 			</p>
 
 			<p>
-				<!-- TODO: Change to link to your Github repository -->
-				<a href="https://github.com/usf-cs360-spring2020/template-bulma" class="button is-small" style="padding-left: 1em; padding-right: 1em;">
+				<!-- DONE: Change to link to your Github repository -->
+				<a href="https://github.com/usf-cs360-spring2020/homework1-icgranger9" class="button is-small" style="padding-left: 1em; padding-right: 1em;">
 					<i class="fab fa-github-alt"></i>&nbsp;<strong>Github</strong>
 				</a>
 
@@ -219,59 +220,33 @@
 	<!-- Mobile menu responsiveness -->
 	<!-- https://bulma.io/documentation/components/navbar/ -->
 	<script>
-	document.addEventListener('DOMContentLoaded', () => {
-		const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+		document.addEventListener('DOMContentLoaded', () => {
+			const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
 
-		if ($navbarBurgers.length > 0) {
-			$navbarBurgers.forEach( el => {
-				el.addEventListener('click', () => {
-					const target = el.dataset.target;
-					const $target = document.getElementById(target);
-					el.classList.toggle('is-active');
-					$target.classList.toggle('is-active');
+			if ($navbarBurgers.length > 0) {
+				$navbarBurgers.forEach( el => {
+					el.addEventListener('click', () => {
+						const target = el.dataset.target;
+						const $target = document.getElementById(target);
+						el.classList.toggle('is-active');
+						$target.classList.toggle('is-active');
+					});
 				});
-			});
-		}
-	});
+			}
+		});
 	</script>
 	<!-- End mobile menu responsiveness -->
 
-	<!-- here is our core javascript -->
+	<!-- Our core javascript -->
 	<script type="text/javascript">
-	// inside the script tag, // and /* */ are comments
-	// outside the script tag, <!-- --> are comments
 
-	// creating a global variable to hold our axis and scales
-	let chart = {};
+		// creating a global variable to hold our axis and scales
+		let chart = {};
+		let file= "../data/viz1.csv"
 
-	console.log("before d3.text() call");
+		createBarChart(file);
 
-	// we need to load the text file into the textarea
-	// this will be done asynchronously!
-	// https://github.com/d3/d3-fetch/blob/master/README.md#text
-	d3.text("../test.txt").then(function(text) {
 
-		// we will use the console and developer tools extensively
-		console.log("data loaded:");
-		console.log(text);
-
-		// we select the textarea from the DOM and update
-		// https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model
-
-		// select statements use css selectors to find elements in the DOM
-		// https://github.com/d3/d3-selection/blob/master/README.md#select
-		d3.select("body").select("textarea").text(text);
-
-		drawBarChart();
-	});
-
-	// this message will appear BEFORE the text is logged!
-	console.log("after d3.text() call");
-
-	// add an event listener to our text area and
-	// update our chart every time new data is entered
-	d3.select("body").select("textarea")
-		.on("keyup", updateBarChart);
 	</script>
 
 	</body>

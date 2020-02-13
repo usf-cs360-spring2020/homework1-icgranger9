@@ -3,19 +3,6 @@
  * the classes/ids defined here must match our d3 code
  */
 
-body, textarea {
-  font-family: 'Roboto', sans-serif;
-  font-weight: 300;
-  font-size: 11pt;
-}
-
-body {
-  margin: 5px;
-  padding: 0px;
-
-  /* see https://developer.mozilla.org/en-US/docs/Web/CSS/color_value */
-  background-color: whitesmoke;
-}
 
 textarea {
   /* position the textarea on top of the svg */
@@ -33,12 +20,12 @@ textarea {
   background-color: rgba(255, 255, 255, 0.8);
 }
 
-textarea, svg {
+textarea, svg#viz {
   border: 1px solid gainsboro;
   border-radius: 10px;
 }
 
-svg {
+svg#viz {
   /* bl.ocks.org defaults to 960px by 500px */
   width: 950px;
   height: 490px;
