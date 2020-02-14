@@ -5,14 +5,13 @@ let createBarChart = function(file){
 	// get the data to visualize
 	d3.csv(file, function(d) {
 		var tmp = {}
-		var region = d["GEO Summary"].toLowerCase()
 
-		tmp["period"] = d["Activity Period"],
-		tmp["geo_summary"] = d["GEO Summary"],
-		tmp["count"] = 	+d["Passenger Count"],
-		tmp[region] = +d["Passenger Count"]
+		tmp["period"] = d["Activity Period"];
+		tmp["geo_summary"] = d["GEO Summary"];
+		tmp["count"] = 	+d["Passenger Count"];
 
-		return tmp
+		return tmp;
+
 	}).then(function(rawData) {
 
 		// Convert the data to a more manageable format
@@ -24,7 +23,29 @@ let createBarChart = function(file){
 }
 
 let cleanData = function(rawData) {
-	let data = d3.nest().key(tmp => tmp.period ).entries(rawData);
+	let tmp = {}
+
+	// gets data into dict with key being the period, and the val being a dict of international and domestic count
+	for (var d of rawData){
+		if (d.period in tmp) {
+			tmp[d.period][d.geo_summary.toLowerCase()] = d.count;
+		}
+		else {
+			var dct = {}
+			dct[d.geo_summary.toLowerCase()] = d.count
+			tmp[d.period] = dct;
+		}
+ 
+	}
+
+	//gets the data into a list of dicts
+	let data = []
+	for (key in tmp) {
+		let val = tmp[key]
+		val["period"] = key
+		data.push(val)
+	}
+
 	return data
 }
 
@@ -35,10 +56,10 @@ let cleanData = function(rawData) {
 let drawEntireChart = function(data) {
 
 	const margin = {
-		top:	15,
-		right:	35, // leave space for y-axis
+		top:	30,
+		right:	35, 
 		bottom: 60, // leave space for x-axis
-		left:	75
+		left:	75	// leave space for y-axis
 	};
 
 	// Draw legend
@@ -50,10 +71,10 @@ let drawEntireChart = function(data) {
 	// Draw axes
 	//calculate the min and max of our data
 	let countMin = 0;
-	let countMax = d3.max(data, function(d) { return d.values[0].count +  d.values[1].count});
+	let countMax = d3.max(data, function(d) { return d.domestic +  d.international});
 
-	let periodMin = d3.min(data, function(d) { return d.key;})
-	let periodMax = d3.max(data, function(d) { return d.key;})
+	let periodMin = d3.min(data, function(d) { return d.period;})
+	let periodMax = d3.max(data, function(d) { return d.period;})
 
 	// Should never hit this
 	if (isNaN(countMax)) {
@@ -73,63 +94,42 @@ let drawEntireChart = function(data) {
 		.nice();
 
 	// x scale
-	let getMonths = function(d){
-	 	var val = [];
-
-	 	for (item of d){
-	 		val.push(item.key);
-	 	}
-
-	 	return val;}
-	let months = getMonths(data).sort()
-
 	let periodScale = d3.scaleBand()
-		.domain(months) // all letters (not using the count here)
+		.domain(data.map(d => d.period)) // all letters (not using the count here)
 		.rangeRound([0, plotWidth])
 		.paddingInner(0.01); // space between bars
 
 	// z scale
-	let passengerScale = d3.scaleOrdinal()
-		.range(["blue", "teal"])
-		.domain(["Domestic", "International"]);
+	let colorKey = ["domestic", "international"]
+	let colorScale = d3.scaleOrdinal()
+		.range(["#5779a3", "#85b5b3"])
+		.domain(colorKey);
 
-	// we are actually going to draw on the "plot area"
+	// create the plot
 	let plot = svg.append("g").attr("id", "plot");
 	plot.attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 	console.assert(plot.size() == 1);
 
-	// now lets draw our x- and y-axis
+	// now lets draw our x-axis
 	let xAxis = d3.axisBottom(periodScale);
-
-	let month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September"]
 	xAxis.tickFormat(function(d, i){
-		return month_names[i]
+		return ["January", "February", "March", "April", "May", "June", "July", "August", "September"][i]
 	})
-
-	let yAxis = d3.axisLeft(countScale);
-
-	yAxis.ticks(7);
-	yAxis.tickFormat(d3.formatPrefix(".0", 1e6));
-	
 
 	let xGroup = plot.append("g").attr("id", "x-axis");
 	xGroup.call(xAxis);
 	xGroup.attr("transform", "translate(0," + plotHeight + ")");
 
-	// do the same for our y axix
+	// do the same for our y axis
+	let yAxis = d3.axisLeft(countScale);
+	yAxis.tickFormat(d3.formatPrefix(".0", 1e6));
+	yAxis.ticks(7);
 	let yGroup = plot.append("g").attr("id", "y-axis");
 	yGroup.call(yAxis);
-	// yGroup.attr("transform", `translate(${margin.left}, 0)`);
+
 
 	//Draw titles
-	let midpoint = function(range) {
-		return range[0] + (range[1] - range[0]) / 2.0;
-	}
-
-	const xMiddle = margin.left + midpoint(countScale.range());
-	const yMiddle = margin.top + midpoint(periodScale.range());
-
 	const xTitle = xGroup.append('text')
     	.attr('class', 'axis-title')
     	.text('Activity Period for [2019]');
@@ -137,7 +137,7 @@ let drawEntireChart = function(data) {
 	xTitle.attr('x', 0);
 	xTitle.attr('y', 0);
 	xTitle.attr('dy', 45);
-	xTitle.attr('dx', xMiddle + 150);
+	xTitle.attr('dx', 400);
 	xTitle.attr('text-anchor', 'middle');
 
 
@@ -154,34 +154,34 @@ let drawEntireChart = function(data) {
 	yTitle.attr('transform', 'rotate(-90)');
 	
 	// Draw Bars
-	let getPairs = function(d) {
-		let ret = [];
 
-		for (var tmp of d) {
-			ret.push([tmp.key, tmp.values[0].count+tmp.values[1].count]);
-		}
+	var group = plot.selectAll("g.layer")
+			.data(d3.stack().keys(colorKey)(data), function(d) {d.period});
 
-		return ret;
-	}
+      group.exit().remove()
 
-	let pairs = getPairs(data);
-	let bars = plot.selectAll("rect")
+      group.enter().append("g")
+			.classed("layer", true)
+			.attr("fill", d => colorScale(d.key));
+
+	let bars = plot.selectAll("g.layer").selectAll("rect")
 		.data(data);
+
 
 	// we use the enter() selection to add new bars for new data
 	bars.enter().append("rect")
 		.attr("class", "bar")
+		.merge(bars)
 		.attr("width", periodScale.bandwidth())
-		.attr("x", d => periodScale(d[0]))
-		.attr("y", d => countScale(d[1]))
-		.attr("height", d => plotHeight - countScale(d[1]))
+		.attr("x", d => periodScale(d.period))
+		.attr("y", d => countScale(d.domestic + d.international))
+		.attr("height", d => plotHeight - countScale(d.domestic+ d.international))
 		.attr("fill", function(d, i) {
-			debugger;
-			passengerScale(d.values[i].geo_summary)
-		})
-		.each(function(d, i, nodes) {
-			console.log("Added bar for:", d[0]);
-		});
+			colorScale(d);});
+		// })
+		// .each(function(d, i, nodes) {
+		// 	console.log("Added bar for:", d.period);
+		// });
 
 	/*
 	 * we need our data as an array of key, value pairs before binding

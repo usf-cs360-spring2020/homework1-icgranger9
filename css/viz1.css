@@ -27,8 +27,8 @@ textarea, svg#viz {
 
 svg#viz {
   /* bl.ocks.org defaults to 960px by 500px */
-  width: 950px;
-  height: 490px;
+  width: 960px;
+  height: 500px;
 
   background-color: white;
 }
@@ -37,7 +37,6 @@ svg#viz {
 
 rect.bar {
   stroke: none;
-  fill: #00543c;
 }
 
 .axis-title {
