@@ -4,34 +4,50 @@ let createBarChart = function(file){
 
 	// get the data to visualize
 	d3.csv(file, function(d) {
-		return {
-			period : d["Activity Period"],
-			month : parseDate(d["Activity Period"]),
-			geo_summary : d["GEO Summary"],
-			count : +d["Passenger Count"]
-		};
-	}).then(function(d) {
+		var tmp = {}
+		var region = d["GEO Summary"].toLowerCase()
+
+		tmp["period"] = d["Activity Period"],
+		tmp["geo_summary"] = d["GEO Summary"],
+		tmp["count"] = 	+d["Passenger Count"],
+		tmp[region] = +d["Passenger Count"]
+
+		return tmp
+	}).then(function(rawData) {
 
 		// Convert the data to a more manageable format
-		let data = d3.nest().key(tmp => tmp.period ).entries(d);
+		let data = cleanData(rawData);
 
 		console.log(data);
-		drawChart(data);
+		drawEntireChart(data);
 	});
+}
+
+let cleanData = function(rawData) {
+	let data = d3.nest().key(tmp => tmp.period ).entries(rawData);
+	return data
 }
 
 /*
  * our massive function to draw a bar chart. note some stuff in here
  * is bonus material (for transitions and updating the text)
  */
-let drawChart = function(data) {
+let drawEntireChart = function(data) {
+
+	const margin = {
+		top:	15,
+		right:	35, // leave space for y-axis
+		bottom: 60, // leave space for x-axis
+		left:	75
+	};
+
+	// Draw legend
+	
 	// get the svg to draw on
 	let svg = d3.select("body").select("svg#viz");
-	console.log(svg)
-
-	// make sure we selected exactly 1 element
 	console.assert(svg.size() == 1);
 
+	// Draw axes
 	//calculate the min and max of our data
 	let countMin = 0;
 	let countMax = d3.max(data, function(d) { return d.values[0].count +  d.values[1].count});
@@ -44,34 +60,19 @@ let drawChart = function(data) {
 		countMax = 0;
 	}
 
-	console.log("count bounds:", [countMin, countMax]);
-	console.log("period bounds:", [periodMin, periodMax]);
-
-	/*
-	 * before we draw, we should decide what kind of margins we
-	 * want. this will be the space around the core plot area,
-	 * where the tick marks and axis labels will be placed
-	 * https://bl.ocks.org/mbostock/3019563
-	 */
-	let margin = {
-		top:	15,
-		right:	35, // leave space for y-axis
-		bottom: 30, // leave space for x-axis
-		left:	125
-	};
-
 	// now we can calculate how much space we have to plot
 	let bounds = svg.node().getBoundingClientRect();
 	let plotWidth = bounds.width - margin.right - margin.left;
 	let plotHeight = bounds.height - margin.top - margin.bottom;
 
 
+	//y Scale
 	let countScale = d3.scaleLinear()
 		.domain([countMin, countMax])
 		.range([plotHeight, 0])
-		.nice(); // rounds the domain a bit for nicer output
+		.nice();
 
-
+	// x scale
 	let getMonths = function(d){
 	 	var val = [];
 
@@ -87,28 +88,33 @@ let drawChart = function(data) {
 		.rangeRound([0, plotWidth])
 		.paddingInner(0.01); // space between bars
 
-	// try using these scales in the console
-	console.log("using count scale:", [countScale(countMin), countScale(countMax)]);
-	console.log("using period scale:", [periodScale(periodMin), periodScale(periodMax)]);
+	// z scale
+	let passengerScale = d3.scaleOrdinal()
+		.range(["blue", "teal"])
+		.domain(["Domestic", "International"]);
 
 	// we are actually going to draw on the "plot area"
 	let plot = svg.append("g").attr("id", "plot");
 	plot.attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-	console.log("Got here")
 	console.assert(plot.size() == 1);
 
 	// now lets draw our x- and y-axis
-	// these require our x (letter) and y (count) scales
 	let xAxis = d3.axisBottom(periodScale);
+
+	let month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September"]
+	xAxis.tickFormat(function(d, i){
+		return month_names[i]
+	})
+
 	let yAxis = d3.axisLeft(countScale);
+
+	yAxis.ticks(7);
 	yAxis.tickFormat(d3.formatPrefix(".0", 1e6));
+	
 
 	let xGroup = plot.append("g").attr("id", "x-axis");
 	xGroup.call(xAxis);
-
-	// notice it is at the top of our svg
-	// we need to translate/shift it down to the bottom
 	xGroup.attr("transform", "translate(0," + plotHeight + ")");
 
 	// do the same for our y axix
@@ -116,10 +122,38 @@ let drawChart = function(data) {
 	yGroup.call(yAxis);
 	// yGroup.attr("transform", `translate(${margin.left}, 0)`);
 
-	/*
-	 * we need our data as an array of key, value pairs before binding
-	 */
+	//Draw titles
+	let midpoint = function(range) {
+		return range[0] + (range[1] - range[0]) / 2.0;
+	}
 
+	const xMiddle = margin.left + midpoint(countScale.range());
+	const yMiddle = margin.top + midpoint(periodScale.range());
+
+	const xTitle = xGroup.append('text')
+    	.attr('class', 'axis-title')
+    	.text('Activity Period for [2019]');
+
+	xTitle.attr('x', 0);
+	xTitle.attr('y', 0);
+	xTitle.attr('dy', 45);
+	xTitle.attr('dx', xMiddle + 150);
+	xTitle.attr('text-anchor', 'middle');
+
+
+	const yTitle = yGroup.append('text')
+		.attr('class', 'axis-title')
+		.text('Passenger Count');
+
+	// keep x, y at 0, 0 for rotation around the origin
+	yTitle.attr('x', 0);
+	yTitle.attr('y', 0);
+	yTitle.attr('dy', -50);
+	yTitle.attr('dx', -200);
+	yTitle.attr('text-anchor', 'middle');
+	yTitle.attr('transform', 'rotate(-90)');
+	
+	// Draw Bars
 	let getPairs = function(d) {
 		let ret = [];
 
@@ -131,9 +165,8 @@ let drawChart = function(data) {
 	}
 
 	let pairs = getPairs(data);
-
 	let bars = plot.selectAll("rect")
-		.data(pairs, function(d) { return d[0]; });
+		.data(data);
 
 	// we use the enter() selection to add new bars for new data
 	bars.enter().append("rect")
@@ -142,9 +175,17 @@ let drawChart = function(data) {
 		.attr("x", d => periodScale(d[0]))
 		.attr("y", d => countScale(d[1]))
 		.attr("height", d => plotHeight - countScale(d[1]))
+		.attr("fill", function(d, i) {
+			debugger;
+			passengerScale(d.values[i].geo_summary)
+		})
 		.each(function(d, i, nodes) {
 			console.log("Added bar for:", d[0]);
 		});
+
+	/*
+	 * we need our data as an array of key, value pairs before binding
+	 */
 
 	// so we can access some of these elements later...
 	// add them to our chart global
@@ -156,5 +197,10 @@ let drawChart = function(data) {
 
 	chart.countScale = countScale;
 	chart.periodScale = periodScale;
+
 };
+
+
+
+
 

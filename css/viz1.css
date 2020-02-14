@@ -40,6 +40,11 @@ rect.bar {
   fill: #00543c;
 }
 
+.axis-title {
+  font-weight: bold;
+  fill: black !important;
+}
+
 #x-axis text,
 #y-axis text {
   font-size: 10pt;
