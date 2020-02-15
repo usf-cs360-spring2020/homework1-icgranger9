@@ -165,38 +165,38 @@ let drawEntireChart = function(data) {
 			.attr("fill", d => colorScale(d.key));
 
 	let bars = plot.selectAll("g.layer").selectAll("rect")
-		.data(data);
+		.data(data, d=>d);
 
+	// I know this is a bad way to do it, but I can't think of anything else. 
+	// I will ask you about it after class.
+	var yCount = 0;
+	var hCount = 0;
 
 	// we use the enter() selection to add new bars for new data
 	bars.enter().append("rect")
 		.attr("class", "bar")
-		.merge(bars)
 		.attr("width", periodScale.bandwidth())
 		.attr("x", d => periodScale(d.period))
-		.attr("y", d => countScale(d.domestic + d.international))
-		.attr("height", d => plotHeight - countScale(d.domestic+ d.international))
-		.attr("fill", function(d, i) {
-			colorScale(d);});
-		// })
-		// .each(function(d, i, nodes) {
-		// 	console.log("Added bar for:", d.period);
-		// });
+		.attr("y", function(d,i) {
+			if (yCount < 9){
+				yCount +=1;
+				return countScale(d.domestic + d.international)
 
-	/*
-	 * we need our data as an array of key, value pairs before binding
-	 */
+			}
+			else {
+				return countScale(d.international)
+			}
+		})
+		.attr("height",function(d,i) {
+			if (hCount < 9){
+				hCount +=1;
+				return plotHeight - countScale(d.domestic)
+			}
+			else {
+				return plotHeight - countScale(d.international)
+			}
+		})
 
-	// so we can access some of these elements later...
-	// add them to our chart global
-	chart.plotWidth = plotWidth;
-	chart.plotHeight = plotHeight;
-
-	chart.xAxis = xAxis;
-	chart.yAxis = yAxis;
-
-	chart.countScale = countScale;
-	chart.periodScale = periodScale;
 
 };
 
