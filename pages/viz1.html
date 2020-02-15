@@ -54,7 +54,7 @@
 					<!-- TODO: Change which navbar-item is-active if needed -->
 					<a class="navbar-item is-active" href="../index.html">
 						<span class="icon"><i class="fas fa-caret-left"></i></span>
-						<span>HW1</span>
+						<span>Overview</span>
 					</a>
 
 					<a class="navbar-item" href="https://usf-cs360-spring2020.github.io/web-icgranger9/">
@@ -72,10 +72,6 @@
 				<div id="main-menu" class="navbar-menu has-text-weight-medium">
 					<!-- Left navbar items -->
 					<div class="navbar-start">
-						<a class="navbar-item" href="#data" title="Data">
-							<span class="icon"><i class="fas fa-table"></i></span>
-							<span>Data</span>
-						</a>
 
 						<!-- TODO: Modify or remove dropdown -->
 						<div class="navbar-item has-dropdown is-hoverable">
@@ -129,7 +125,21 @@
 						A bar chart for SFO's monthly passenger count
 					</p>
 
-					<p> For this visualization, I used a bar chart to show the passenger count for flights to and from SFO for each month in 2019. The data points used in this visualization were "Activity Period", "Passenger Count", and "GEO Summary". The x-axis uses activity period to show the breakdown of passengers for each given month, and the y-axis shows passenger count, to give an idea of how many people flew that month. Beyond that, GEO summary was used to show weather the passengers were foreign or domestic. For a more detailed breakdown of how each attribute looks in the raw data, please refer to the <a href="../index.html#data">data</a> section</p>
+					<p> For this visualization, I used a bar chart to show the passenger count for flights to and from SFO for each month in 2019. The data points used in this visualization were "Activity Period", "Passenger Count", and "GEO Summary". The x-axis uses activity period to show the breakdown of passengers for each given month, and the y-axis shows passenger count, to give an idea of how many people flew that month. Beyond that, GEO summary was used to show weather the passengers were foreign or domestic. For a more detailed breakdown of how each attribute looks in the raw data, please refer to the data section</p>
+
+					<h2 id="data">Data</h2>
+
+					<p>This data set is composed of air passenger statistics, retrieved from <a href="https://datasf.org/opendata/">DataSF</a>. Using their website, I was able to filter down to only the information that is relevant to this visualization, which is:</p>
+
+
+					<ul>
+						<li><strong>Activity Period:</strong> The year and month that this data is from. It was given in the format "YYYYMM", with four digits for the year, and two for the month. In my implementation, I considered converting this basic information into a more complex date type, however this turned out to not be necessary, as once they were converting into integers, they could easily be sorted into their proper order. </li>
+
+						<li><strong>GEO Summary:</strong> This indicates what type of flight it was, either "Domestic" or "International". This was used in visualizing the difference in amount domestic vs international passengers. </li>
+
+						<li><strong>Passenger Count:</strong> This value was a summation of all the passengers for the given flight type and activity period. I was able to do this summation on dataSF's website, which drastically reduced the amount of data I had to manage. </li>
+
+					</ul>
 
 					<h2 id="visualizations">Prototype</h2>
 
@@ -139,7 +149,11 @@
 
 					<h2 id="visualizations">D3 Implementation</h2>
 
+					<h3>SFO Monthly Passenger Count</h3>
 					<svg id="viz"></svg>
+					<svg id="legend"></svg>
+					<p>Created by: Ian Granger<br>
+					Data source: <a href="https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg">https://data.sfgov.org/Transportation/Air-Traffic-Passenger-Statistics/rkru-6vcg</a> </p>
 
 
 					<h2 id="about">About</h2>
@@ -245,6 +259,7 @@
 			let file= "../data/viz1.csv"
 
 			createBarChart(file);
+			createLegend();
 
 
 		</script>

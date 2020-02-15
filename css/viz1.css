@@ -20,7 +20,7 @@ textarea {
   background-color: rgba(255, 255, 255, 0.8);
 }
 
-textarea, svg#viz {
+textarea {
   border: 1px solid gainsboro;
   border-radius: 10px;
 }
@@ -33,10 +33,31 @@ svg#viz {
   background-color: white;
 }
 
+svg#legend {
+  /* Just copying the size of the legend in tableau */
+  width: 160px;
+  height: 500px;
+
+  background-color: white;
+}
+
 /* svg elements are styled differently from html elements */
 
 rect.bar {
   stroke: none;
+}
+
+.legend-title {
+  font-weight: bold;
+  font-size: 10pt;
+}
+
+.legend-squares {
+  border: 1px;
+}
+
+.legend-labels {
+  font-size: 10pt;
 }
 
 .axis-title {

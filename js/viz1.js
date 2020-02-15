@@ -180,7 +180,7 @@ let drawEntireChart = function(data) {
 		.attr("y", function(d,i) {
 			if (yCount < 9){
 				yCount +=1;
-				return countScale(d.domestic + d.international)
+				return countScale(d.domestic + d.international) - 1 // -1 to give a 1px gap
 
 			}
 			else {
@@ -195,12 +195,51 @@ let drawEntireChart = function(data) {
 			else {
 				return plotHeight - countScale(d.international)
 			}
-		})
-
+		});
 
 };
 
 
+let createLegend = function() {
+	const margin = {
+		top:	30,
+		right:	35, 
+		bottom: 60, // leave space for x-axis
+		left:	75	// leave space for y-axis
+	};
 
+	let svg = d3.select("body").select("svg#legend");
+
+	let colorKey = ["Domestic", "International"]
+	let colorScale = d3.scaleOrdinal()
+		.range(["#5779a3", "#85b5b3"])
+		.domain(colorKey);
+
+	let squares = svg.selectAll("squares")
+		.data(colorKey);
+
+	squares.enter().append("rect")
+		.attr("class", "legend-squares")
+		.attr("x", 0)
+		.attr("y", function(d,i){ return 30 + i*30})
+		.attr("width", 15)
+		.attr("height", 15)
+		.attr("fill", d => colorScale(d))
+
+	let labels = svg.selectAll("squares")
+		.data(colorKey);
+
+	labels.enter().append("text")
+		.attr("class", "legend-labels")
+		.attr("x", 20)
+		.attr("y", function(d,i){ return 45 + i*30})
+		.text(function(d){ return d})
+
+	svg.append("text")
+		.attr("class","legend-title")
+		.attr("x", 0)
+		.attr("y", 20)
+		.text("Passenger Type");
+}
 
 
